@@ -40,7 +40,7 @@ func Shmget(key int, size int, shmflg int) (shmid int, err error) {
 }
 
 func Shmat(shmid int, shmflg int) (data []byte, err error) {
-	addr, errno := shmat(shmid, 9, shmflg)
+	addr, errno := shmat(shmid, 0, shmflg)
 	if errno != nil {
 		return nil, errno
 	}
@@ -82,6 +82,17 @@ func shmseqsz(shmid int) (segsz int, err error) {
 	}
 	return int(shmid_ds.shm_segsz), nil
 }
+
+func Shmdt(data []byte) (err error) {
+	result, errno := C.shmdt(unsafe.Pointer(&data[0]))
+
+	if result == -1 {
+		return errno
+	}
+	return nil
+
+}
+
 
 // Remove the shared memory specified by shmid
 func Shmrm(shmid int) (err error) {
