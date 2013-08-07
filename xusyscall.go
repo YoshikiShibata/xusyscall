@@ -83,6 +83,7 @@ func shmseqsz(shmid int) (segsz int, err error) {
 	return int(shmid_ds.shm_segsz), nil
 }
 
+// Detach the shared memory
 func Shmdt(data []byte) (err error) {
 	result, errno := C.shmdt(unsafe.Pointer(&data[0]))
 
@@ -90,9 +91,7 @@ func Shmdt(data []byte) (err error) {
 		return errno
 	}
 	return nil
-
 }
-
 
 // Remove the shared memory specified by shmid
 func Shmrm(shmid int) (err error) {
