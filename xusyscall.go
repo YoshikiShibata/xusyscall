@@ -31,12 +31,12 @@ const (
 )
 
 func Shmget(key int, size int, shmflg int) (shmid int, err error) {
-	result, err := C.shmget(C.key_t(key), C.size_t(size), C.int(shmflg))
+	result, errno := C.shmget(C.key_t(key), C.size_t(size), C.int(shmflg))
 
-	if err != nil {
-		shmid = int(result)
+	if result == -1 {
+		return -1, errno
 	}
-	return
+	return int(result), nil
 }
 
 func Shmat(shmid int, shmflg int) (data []byte, err error) {
@@ -81,4 +81,16 @@ func shmseqsz(shmid int) (segsz int, err error) {
 		return 0, errno
 	}
 	return int(shmid_ds.shm_segsz), nil
+}
+
+// Remove the shared memory specified by shmid
+func Shmrm(shmid int) (err error) {
+	result, errno := C.shmctl(C.int(shmid), ipc_RMID, 
+			(*_Ctype_struct_shmid_ds)(unsafe.Pointer(uintptr(0))))
+	
+	
+	if result == -1 {
+		return errno
+	}
+	return nil
 }
