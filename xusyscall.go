@@ -74,12 +74,10 @@ func shmat(shmid int, shmaddr uintptr, shmflg int) (addr uintptr, err error) {
 func shmseqsz(shmid int) (segsz int, err error) {
 	var shmid_ds C.struct_shmid_ds
 
-	result, errno := C.shmctl(C.int(shmid), ipc_STAT, 
-			(*_Ctype_struct_shmid_ds)(unsafe.Pointer(&shmid_ds)))
-
-	if result == -1 {
-		return 0, errno
-	}
+    errno := shmctl(shmid, ipc_STAT, &shmid_ds)
+    if errno != nil {
+        return 0, errno
+    }
 	return int(shmid_ds.shm_segsz), nil
 }
 
@@ -95,11 +93,11 @@ func Shmdt(data []byte) (err error) {
 
 // Remove the shared memory specified by shmid
 func Shmrm(shmid int) (err error) {
-	result, errno := C.shmctl(C.int(shmid), ipc_RMID, 
-			(*_Ctype_struct_shmid_ds)(unsafe.Pointer(uintptr(0))))
+	var shmid_ds C.struct_shmid_ds
+
+    errno := shmctl(shmid, ipc_RMID, &shmid_ds)
 	
-	
-	if result == -1 {
+	if errno != nil {
 		return errno
 	}
 	return nil

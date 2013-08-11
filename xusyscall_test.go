@@ -15,6 +15,7 @@ func TestPrivateGet(t *testing.T) {
 	if err != nil {
 		t.Errorf("shmget error = " + err.Error())
 		t.Fail()
+        return
 	} 
 
 	t.Logf("shmid = %d\n", shmid)
@@ -25,6 +26,7 @@ func TestNonPrivateGet(t *testing.T) {
 
 	if err != nil {
 		t.Errorf("shmget error = " + err.Error())
+        return
 	} 
 
 	t.Logf("shmid = %d\n", shmid)
@@ -36,6 +38,7 @@ func TestAttachNonPrivate(t *testing.T) {
 
 	if err != nil {
 		t.Errorf("shmget error = " + err.Error())
+        return
 	} 
 	t.Logf("shmid = %d\n", shmid)
 
@@ -43,11 +46,13 @@ func TestAttachNonPrivate(t *testing.T) {
 	data, err = Shmat(shmid, 0)
 	if err != nil {
 		t.Errorf("Shmat error = " + err.Error())
+        return
 	} 
 
 	t.Logf("len(data) = %d\n", len(data))
 	if len(data) != sizeOfShm {
 		t.Errorf("len(data) = %d\n", len(data))
+        return
 	}
 	for i := 0; i < len(data); i++ {
 		data[i] = byte(i & 0xff) 
@@ -56,6 +61,7 @@ func TestAttachNonPrivate(t *testing.T) {
 	err = Shmdt(data)
 	if  err != nil {
 		t.Errorf("Shmdt error = " + err.Error())
+        return
 	} 
 
 	cleanUpSharedMemory(shmid, t)
