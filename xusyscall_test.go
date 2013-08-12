@@ -5,64 +5,91 @@ package xusyscall
 import "testing"
 
 const (
-	keyOfShm = 1701
+	keyOfShm  = 1701
 	sizeOfShm = 1024 * 1024
 )
 
+func failIfRecoverIsNil(t *testing.T) {
+	if x := recover(); x == nil {
+		t.Fail()
+	}
+}
+
+func TestIllegalKeyForGet(t *testing.T) {
+	defer failIfRecoverIsNil(t)
+
+	// negative key
+	Shmget(-1, sizeOfShm, IPC_CREAT|IPC_EXCL)
+}
+
+func TestIllegalSizeForGet(t *testing.T) {
+	defer failIfRecoverIsNil(t)
+
+	// negative size
+	Shmget(IPC_PRIVATE, -1, IPC_CREAT|IPC_EXCL)
+}
+
+func TestIllegalFlagForGet(t *testing.T) {
+	defer failIfRecoverIsNil(t)
+
+	// negative flag
+	Shmget(IPC_PRIVATE, sizeOfShm, -1)
+}
+
 func TestPrivateGet(t *testing.T) {
-	shmid, err := Shmget(IPC_PRIVATE, sizeOfShm, IPC_CREAT | IPC_EXCL)
+	shmid, err := Shmget(IPC_PRIVATE, sizeOfShm, IPC_CREAT|IPC_EXCL)
 
 	if err != nil {
 		t.Errorf("shmget error = " + err.Error())
 		t.Fail()
-        return
-	} 
+		return
+	}
 
 	t.Logf("shmid = %d\n", shmid)
 }
 
 func TestNonPrivateGet(t *testing.T) {
-	shmid, err := Shmget(keyOfShm, sizeOfShm, IPC_CREAT | IPC_EXCL)
+	shmid, err := Shmget(keyOfShm, sizeOfShm, IPC_CREAT|IPC_EXCL)
 
 	if err != nil {
 		t.Errorf("shmget error = " + err.Error())
-        return
-	} 
+		return
+	}
 
 	t.Logf("shmid = %d\n", shmid)
 	cleanUpSharedMemory(shmid, t)
 }
 
 func TestAttachNonPrivate(t *testing.T) {
-	shmid, err := Shmget(keyOfShm, sizeOfShm, IPC_CREAT | IPC_EXCL | 0777)
+	shmid, err := Shmget(keyOfShm, sizeOfShm, IPC_CREAT|IPC_EXCL|0777)
 
 	if err != nil {
 		t.Errorf("shmget error = " + err.Error())
-        return
-	} 
+		return
+	}
 	t.Logf("shmid = %d\n", shmid)
 
 	var data []byte
 	data, err = Shmat(shmid, 0)
 	if err != nil {
 		t.Errorf("Shmat error = " + err.Error())
-        return
-	} 
+		return
+	}
 
 	t.Logf("len(data) = %d\n", len(data))
 	if len(data) != sizeOfShm {
 		t.Errorf("len(data) = %d\n", len(data))
-        return
+		return
 	}
 	for i := 0; i < len(data); i++ {
-		data[i] = byte(i & 0xff) 
+		data[i] = byte(i & 0xff)
 	}
 
 	err = Shmdt(data)
-	if  err != nil {
+	if err != nil {
 		t.Errorf("Shmdt error = " + err.Error())
-        return
-	} 
+		return
+	}
 
 	cleanUpSharedMemory(shmid, t)
 }

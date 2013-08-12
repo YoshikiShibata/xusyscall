@@ -15,14 +15,21 @@ package xusyscall
 import "C"
 
 import "unsafe"
+import "strconv"
 
+// Flags for fuctions. About details see the output of `man shmget` on Unix.
 const (
-	IPC_PRIVATE = 0		// Private key
+	// Private key
+	IPC_PRIVATE = 0
 
-	IPC_CREAT     =  01000 // Create key if key does not exist
-	IPC_EXCL      =  02000 // Fail if key exists
-	SHM_HUGETLB	  =  04000 // segment is mapped via hugetlb
-	SHM_NORESERVE = 010000 // don't check for reservations
+	// Create key if key does not exist
+	IPC_CREAT = 01000
+	// Fail if key exists
+	IPC_EXCL = 02000
+	// Segment is mapped via hugetlb
+	SHM_HUGETLB = 04000
+	// Don't check for reservations
+	SHM_NORESERVE = 010000
 
 	ipc_RMID = 0
 	ipc_SET  = 1
@@ -30,7 +37,19 @@ const (
 	ipc_INFO = 3
 )
 
+// Gets a shared memory specified by the key.
+// key, size, and shmflg must be equal to or greater than 0.
 func Shmget(key int, size int, shmflg int) (shmid int, err error) {
+	if key < 0 {
+		panic("key is negative value: " + strconv.Itoa(key))
+	}
+	if size < 0 {
+		panic("size is negative value: " + strconv.Itoa(size))
+	}
+	if shmflg < 0 {
+		panic("shmflg is negative value: " + strconv.Itoa(shmflg))
+	}
+
 	result, errno := C.shmget(C.key_t(key), C.size_t(size), C.int(shmflg))
 
 	if result == -1 {
@@ -39,8 +58,15 @@ func Shmget(key int, size int, shmflg int) (shmid int, err error) {
 	return int(result), nil
 }
 
+// Attaches the specified shared memory.
+// shmflg must be equal to or greater than 0.
 func Shmat(shmid int, shmflg int) (data []byte, err error) {
+	if shmflg < 0 {
+		panic("shmflg is negative value: " + strconv.Itoa(shmflg))
+	}
+
 	addr, errno := shmat(shmid, 0, shmflg)
+
 	if errno != nil {
 		return nil, errno
 	}
@@ -74,15 +100,15 @@ func shmat(shmid int, shmaddr uintptr, shmflg int) (addr uintptr, err error) {
 func shmseqsz(shmid int) (segsz int, err error) {
 	var shmid_ds C.struct_shmid_ds
 
-    errno := shmctl(shmid, ipc_STAT, &shmid_ds)
-    if errno != nil {
-        return 0, errno
-    }
+	errno := shmctl(shmid, ipc_STAT, &shmid_ds)
+	if errno != nil {
+		return 0, errno
+	}
 	return int(shmid_ds.shm_segsz), nil
 }
 
-// Detach the shared memory
-func Shmdt(data []byte) (err error) {
+// Detaches the shared memory
+func Shmdt(data []byte) error {
 	result, errno := C.shmdt(unsafe.Pointer(&data[0]))
 
 	if result == -1 {
@@ -92,25 +118,24 @@ func Shmdt(data []byte) (err error) {
 }
 
 // Remove the shared memory specified by shmid
-func Shmrm(shmid int) (err error) {
+func Shmrm(shmid int) error {
 	var shmid_ds C.struct_shmid_ds
 
-    errno := shmctl(shmid, ipc_RMID, &shmid_ds)
-	
+	errno := shmctl(shmid, ipc_RMID, &shmid_ds)
+
 	if errno != nil {
 		return errno
 	}
 	return nil
 }
 
-
 // shmctl syscall
-func shmctl(shmid int, cmd int, shmid_ds *C.struct_shmid_ds) (error) {
-	result, errno := C.shmctl(C.int(shmid), C.int(cmd), 
-            (*C.struct_shmid_ds)(unsafe.Pointer(shmid_ds)))
+func shmctl(shmid int, cmd int, shmid_ds *C.struct_shmid_ds) error {
+	result, errno := C.shmctl(C.int(shmid), C.int(cmd),
+		(*C.struct_shmid_ds)(unsafe.Pointer(shmid_ds)))
 
 	if result == -1 {
 		return errno
-    }
-    return nil
+	}
+	return nil
 }
