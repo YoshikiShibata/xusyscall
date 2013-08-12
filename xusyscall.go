@@ -102,3 +102,15 @@ func Shmrm(shmid int) (err error) {
 	}
 	return nil
 }
+
+
+// shmctl syscall
+func shmctl(shmid int, cmd int, shmid_ds *C.struct_shmid_ds) (error) {
+	result, errno := C.shmctl(C.int(shmid), C.int(cmd), 
+            (*C.struct_shmid_ds)(unsafe.Pointer(shmid_ds)))
+
+	if result == -1 {
+		return errno
+    }
+    return nil
+}
