@@ -1,6 +1,6 @@
 // Copyright (c) 2013 Yoshiki Shibata. All rights reserved.
 
-// Package xusyscall contains system calls which are not 
+// Package xusyscall contains system calls which are not
 // provided the original Go syscall package.
 package xusyscall
 
@@ -25,10 +25,9 @@ const (
 	IPC_CREAT = 01000
 	// Fail if key exists
 	IPC_EXCL = 02000
-	// Segment is mapped via hugetlb
-	SHM_HUGETLB = 04000
-	// Don't check for reservations
-	SHM_NORESERVE = 010000
+
+	// Read-Only access
+	SHM_RDONLY = 010000
 
 	ipc_RMID = 0
 	ipc_SET  = 1
