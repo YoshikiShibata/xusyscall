@@ -1,8 +1,7 @@
 // Copyright (c) 2013 Yoshiki Shibata. All rights reserved.
 
-// This package is intended to provide some system calls which are not
+// Package xusyscall contains system calls which are not 
 // provided the original Go syscall package.
-
 package xusyscall
 
 // Note that some system call such as shmget is not a system call on some
