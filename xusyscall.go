@@ -27,7 +27,7 @@ const (
 	IPC_EXCL = 02000
 
 	// Read-Only access
-	SHM_RDONLY = 010000
+	shm_RDONLY = 010000
 
 	ipc_RMID = 0
 	ipc_SET  = 1
@@ -57,12 +57,14 @@ func Shmget(key int, size int, shmflg int) (shmid int, err error) {
 }
 
 // Attaches the specified shared memory.
-// shmflg must be equal to or greater than 0.
-func Shmat(shmid int, shmflg int) (data []byte, err error) {
-	if shmflg < 0 {
-		panic("shmflg is negative value: " + strconv.Itoa(shmflg))
-	}
+// readOnly is used to attach the memory in read-only mode.
+func Shmat(shmid int, readOnly bool) (data []byte, err error) {
+	var shmflg = 0;
 
+	if readOnly {
+		shmflg = shm_RDONLY
+	}
+	
 	addr, errno := shmat(shmid, 0, shmflg)
 
 	if errno != nil {
@@ -74,7 +76,7 @@ func Shmat(shmid int, shmflg int) (data []byte, err error) {
 		return nil, errno2
 	}
 
-	// Slice memory layout
+	// Slice memory layout: see the implementation of Mmap
 	var sl = struct {
 		addr uintptr
 		len  int

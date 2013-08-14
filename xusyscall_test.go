@@ -86,7 +86,7 @@ func testReadOnlyAccess(key int, t *testing.T) {
 	defer removeSharedMemory(shmid, t)
 
 	var data []byte
-	data, err = Shmat(shmid, SHM_RDONLY)
+	data, err = Shmat(shmid, true)
 
 	if err != nil {
 		t.Error("Shmat error = " + err.Error())
@@ -124,7 +124,7 @@ func testReadWriteAccess(key int, t *testing.T) {
 	defer removeSharedMemory(shmid, t)
 
 	var data []byte
-	data, err = Shmat(shmid, 0)
+	data, err = Shmat(shmid, false)
 
 	if err != nil {
 		t.Error("Shmat error = " + err.Error())
