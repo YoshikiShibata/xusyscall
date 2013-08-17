@@ -1,8 +1,9 @@
 // Copyright (c) 2013 Yoshiki Shibata. All rights reserved.
 
-package xusyscall
+package xusyscall_test
 
 import "testing"
+import . "."
 
 const (
 	keyOfShm  = 1701
