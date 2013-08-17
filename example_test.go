@@ -6,7 +6,7 @@ import "fmt"
 import . "."
 
 func Example() {
-	shmid, err := Shmget(keyOfShm, sizeOfShm, IPC_CREAT | IPC_EXCL | 0777)
+	shmid, err := Shmget(keyOfShm, sizeOfShm, IPC_CREAT|IPC_EXCL|0777)
 	if err != nil {
 		fmt.Printf("shmget error = " + err.Error())
 		return
@@ -18,11 +18,10 @@ func Example() {
 			fmt.Printf("Shmrd error = " + err.Error())
 			return
 		}
-		panic("panic")
 	}()
 
 	var data []byte
-	data, err = Shmat(shmid, true)
+	data, err = Shmat(shmid, false)
 
 	if err != nil {
 		fmt.Printf("Shmat error = " + err.Error())
@@ -30,7 +29,7 @@ func Example() {
 	}
 
 	defer func() {
-		err := Shmdt(data)	
+		err := Shmdt(data)
 		if err != nil {
 			fmt.Printf("Shmdt error = " + err.Error())
 			return
@@ -41,10 +40,12 @@ func Example() {
 
 	// Write and Read
 	for i := 0; i < len(data); i++ {
-			b := byte(i & 0xff)
+		b := byte(i & 0xff)
 		data[i] = b
-		if (data[i] != b) {
+		if data[i] != b {
 			fmt.Printf("incorrect read\n")
 		}
 	}
+	// Output:
+	// len(data) = 1048576
 }
